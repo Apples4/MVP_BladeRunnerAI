@@ -1,0 +1,7 @@
+x_min,y_min,x_max,y_max,class_id,confidence,tracker_id,class_name,time
+191.8952,13.34584,360.45312,107.47742,2,0.8485939,,car,<built-in method now of type object at 0x5fda3afa58a0>
+0.19535828,83.62665,164.09439,260.5243,2,0.758004,,car,<built-in method now of type object at 0x5fda3afa58a0>
+556.53546,160.96571,615.6962,373.4945,0,0.74454504,,person,<built-in method now of type object at 0x5fda3afa58a0>
+467.71008,162.99054,534.5444,414.81775,0,0.6468382,,person,<built-in method now of type object at 0x5fda3afa58a0>
+837.02014,412.24048,1180.1506,708.99536,2,0.34976545,,car,<built-in method now of type object at 0x5fda3afa58a0>
+475.99005,324.66516,531.2768,422.61,36,0.25015926,,skateboard,<built-in method now of type object at 0x5fda3afa58a0>
