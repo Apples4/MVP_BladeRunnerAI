@@ -1,4 +1,4 @@
-from shiny import App, ui, render
+from shiny import App, ui, render, reactive
 from flask import Flask, send_file
 from client_cycle import send_video
 from server_side import Detection
@@ -9,7 +9,7 @@ import os
 
 app_ui = ui.page_fluid(
         ui.h1("Video Stream"),
-        ui.img(id="video-frame", scr="/frames/frame.jpg"),
+        ui.img(id="video-frame", src="/frames/frame.jpg"),
         ui.tags.script(
         """
         setInterval(function(){
@@ -23,7 +23,7 @@ flask_app = Flask(__name__)
 def server(input, output, session):
     @reactive.Effect
     def _():
-        ui.output_image("video_frame", "recieved_frames/frame.jpg")
+        ui.output_image("video_frame", "frames/frame.jpg")
 
 app = App(app_ui, server)
 
@@ -33,11 +33,19 @@ def run_flask_app():
 
 
 def serve_frame(filename):
-    return send_file(os.path.join("recived_frames", filename), mimetype="image/jpeg")
+    frame_path = os.path.join("frames", filename)
+    if os.path.exists(frame_path):
+        return send_file(frame_path, mimetype="image/jpeg")
+    else:
+        print(f"Frame not found: {frame_path}")  # Debugging print
+        return "Frame not found", 404 
 
 def run_server_and_client():
-    server_process = subprocess.Popen(["python3", "server_side.py"])
-    client_process = subprocess.Popen(["python3", "client_cycle.py", "video_1.py"])
+    server_process = subprocess.Popen(["python3",
+                                       "server_side.py"])
+    client_process = subprocess.Popen(["python3",
+                                       "client_cycle.py",
+                                       "video_1.py"])
     return server_process, client_process
 
 

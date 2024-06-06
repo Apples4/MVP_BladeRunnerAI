@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 
 import cv2
+import os
+import time
 import socket
 import struct
 import pickle
+from icecream import ic
 
 
 def send_video(input_video_path: str):
@@ -15,12 +18,20 @@ def send_video(input_video_path: str):
     Returns:
         None
     """
+    if input_video_path is None or not isinstance(input_video_path, str):
+        print("Invalid input video path")
+        return
+
     # Connect to server
     HOST = "127.0.0.1"
     PORT = 5000
-
+    """HOST = "10.0.0.2"
+    PORT = 8000"""
+    ic()
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ic()
     client_socket.connect((HOST, PORT))
+    print("connection made")
     connection = client_socket.makefile('wb')
 
     # Open video capture
@@ -55,15 +66,19 @@ def send_video(input_video_path: str):
         frame_data = data[:size]
         frame = pickle.loads(frame_data)
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-
+        
+        frame_path = f"frames/frame_{int(time.time())}.jpg"
         # Display the received frame
-        cv2.imwrite(f"{output_path}/frame.jpg", frame)
-        frame_count += 1
+        if not os.path.exists('frames'):
+            os.makedir('frames')
+        cv2.imwrite(frame_path, frame)
+        time.sleep(0.1)
 
     cam.release()
     client_socket.close()
-    cv2.destroyAllWindows()
-    
+    """cv2.destroyAllWindows()"""
+
 
 if __name__ == "__main__":
     send_video("video_1.mp4")
+
