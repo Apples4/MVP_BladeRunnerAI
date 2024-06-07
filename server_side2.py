@@ -5,6 +5,7 @@ import os
 import socket
 import struct
 import pickle
+from icecream import ic
 import numpy as np
 import torch
 import time
@@ -15,12 +16,12 @@ from ultralytics.utils.plotting import Annotator, colors
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 class Detection:
     """
     class used to detect objects in a video,
     the model is trained to look at guns and crowbar
     """
-
 
     def __init__(self, capture_index):
         """
@@ -39,7 +40,7 @@ class Detection:
 
         """checking if device uses cpu or gpu """
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+
     def predict(self, img):
         """function to run ML model on video
 
@@ -70,12 +71,15 @@ class Detection:
         names = results[0].names
         for box, cls in zip(boxes, clas):
             class_ids.append(cls)
-            self.annotator.box_label(box, label=names[int(cls)], color=colors(int(cls), True))
+            self.annotator.box_label(box,
+                                     label=names[int(cls)],
+                                     color=colors(int(cls), True))
         return img, class_ids
 
     def handle_client(self, conn):
         """
-        function that handles dissconnections between server and client
+        function that handles object detection of the video feed
+        and annotates it
 
         params:
             conn: connection between server and client
@@ -84,68 +88,74 @@ class Detection:
             an error or the data of the client
         """
         try:
+            """ loop through framrs """
             while True:
                 data = b""
                 payload_size = struct.calcsize(">L")
-                
+
                 while len(data) < payload_size:
-                   data_chunk = conn.recv(4096) 
-                   if not data_chunk:
-                       logging.error("No data received")
-                       return
-                   data += data_chunk
+                    data_chunk = conn.recv(4096)
+                    if not data_chunk:
+                        logging.error("No data received")
+                        return
+                    data += data_chunk
 
                 packed_msg_size = data[:payload_size]
                 data = data[payload_size:]
                 msg_size = struct.unpack(">L", packed_msg_size)[0]
-            
+
                 while len(data) < msg_size:
-                   data_chunk = conn.recv(4096)
-                   if not data_chunk:
-                       logging.error("Incomplete data received")
-                       return
-                   data += data_chunk
+                    data_chunk = conn.recv(4096)
+                    if not data_chunk:
+                        logging.error("Incomplete data received")
+                        return
+                    data += data_chunk
 
                 frame_data = data[:msg_size]
-
+                """ loading frames from client """
                 frame = pickle.loads(frame_data)
                 frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-                frame_path =  "frames/frame.jpg"
                 logging.debug("Frame received and decoded")
-                cv2.imwrite(frame_path, frame)
 
                 img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                
-                results = self.predict(img)
-                img, class_ids = self.plot_annotate(results, img)
 
+                """ running object detection on frame and annotate it """
+                ic()
+                results = self.predict(img)
+                ic()
+                img, class_ids = self.plot_annotate(results, img)
+                logging.info("Annotated frame")
+
+                """ saving each frame into the """
                 frame_filename = f"frame_{int(time.time())}.jpg"
                 frame_path = os.path.join("frames", frame_filename)
+                logging.info("frame is named and created")
                 cv2.imwrite(frame_path, img)
-                cv2.imshow("Frame", img)
+                logging.info("saving frame")
                 logging.info(f"Frame saved at {frame_path}")
 
+                """ send acknowledgement to the client """
+                logging.debug("Sending ACK")
                 conn.sendall(b'ACK')
-
-
         except Exception as e:
             logging.error(f"Error processing frame: {e}")
         finally:
             conn.close()
             logging.info("Connection closed")
 
-
     def __call__(self):
         """
-        private function that uses the above function to 
+        private function that uses the above function to
         process the video stream
 
         returns:
             returns the processed image to the client
         """
         logging.info("Starting server")
+        """ if the connection is still active"""
         while True:
             try:
+                """ setting up connection"""
                 HOST = ""
                 PORT = 5000
                 server_socket = socket.socket(socket.AF_INET,
@@ -157,7 +167,7 @@ class Detection:
                 server_socket.bind((HOST, PORT))
                 server_socket.listen(10)
                 logging.info(f"Server listening on {HOST}:{PORT}")
-
+                """ connecting to server """
                 while True:
                     conn, addr = server_socket.accept()
                     logging.info(f"Connection from {addr}")
