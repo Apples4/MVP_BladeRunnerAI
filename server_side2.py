@@ -100,6 +100,10 @@ class Detection:
                         return
                     data += data_chunk
 
+                if data[:3] == b'END':
+                    logging.info("Termination signal received, closing connection")
+                    break
+
                 packed_msg_size = data[:payload_size]
                 data = data[payload_size:]
                 msg_size = struct.unpack(">L", packed_msg_size)[0]
@@ -131,10 +135,9 @@ class Detection:
                 frame_path = os.path.join("frames", frame_filename)
                 logging.info("frame is named and created")
                 cv2.imwrite(frame_path, img)
-                logging.info("saving frame")
                 logging.info(f"Frame saved at {frame_path}")
 
-                """ send acknowledgement to the client """
+                """ send acknowledgement(ACK) to the client """
                 logging.debug("Sending ACK")
                 conn.sendall(b'ACK')
         except Exception as e:

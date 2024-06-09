@@ -55,6 +55,7 @@ def send_video(input_video_path: str):
                 ret, frame = cam.read()
                 if not ret:
                     logging.debug("Connection made")
+                    client_socket.sendall(TERMINATION_SIGNAL)
                     break
 
                 """ Encode each frame as JPEG """
@@ -76,7 +77,6 @@ def send_video(input_video_path: str):
                     logging.error(f"Send error: {e}")
                     break
                 
-            logging.debug("Sending end of video signal")
             cam.release()
             client_socket.close()
             logging.info("Client connection closed")

@@ -42,9 +42,9 @@ def serve_frame(filename):
 
 def run_server_and_client():
     server_process = subprocess.Popen(["python3",
-                                       "server_side.py"])
+                                       "server_side2.py"])
     client_process = subprocess.Popen(["python3",
-                                       "client_cycle.py",
+                                       "client_cycle1.py",
                                        "video_1.py"])
     return server_process, client_process
 
