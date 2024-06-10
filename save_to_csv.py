@@ -6,7 +6,7 @@ from datetime import datetime
 import pandas as pd
 
 
-model = YOLO("yolov8n.pt")
+model = YOLO("models/best.pt")
 
 
 def save_info(input_video_path: str):

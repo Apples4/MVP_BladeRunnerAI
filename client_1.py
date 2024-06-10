@@ -5,7 +5,6 @@ import time
 import socket
 import struct
 import pickle
-from icecream import ic
 import logging
 
 
@@ -35,7 +34,6 @@ def send_video(input_video_path: str):
         try:
             logging.info("reconnecting (Client 1)")
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            ic()
             client_socket.connect((HOST, PORT))
             logging.info("connection made (Client 1)")
             connection = client_socket.makefile('wb')
@@ -51,7 +49,7 @@ def send_video(input_video_path: str):
                 ret, frame = cam.read()
                 if not ret:
                     logging.debug("Connection made (Client 1)")
-                    client_socket.sendall(b'TERMINATION_SIGNAL') 
+                    client_socket.sendall(b'TERMINATION_SIGNAL')
                     break
                 """ Encode each frame as JPEG """
                 result, frame = cv2.imencode('.jpg', frame, encode_param)
@@ -65,7 +63,7 @@ def send_video(input_video_path: str):
                     ack = client_socket.recv(3)
                     logging.debug(f"Received {ack}")
                     if ack != b'ACK':
-                        logging.error("Did not receive ACK, closing connection")
+                        logging.error("No ACK, closing connection")
                         break
                 except ConnectionResetError as e:
                     logging.error(f"Send error: {e}")
@@ -86,5 +84,5 @@ def send_video(input_video_path: str):
 
 
 if __name__ == "__main__":
-        send_video("video_1.mp4")  
-        logging.info("Client process finished")
+    send_video("video_2.mp4")
+    logging.info("Client process finished")

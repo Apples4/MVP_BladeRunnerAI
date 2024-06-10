@@ -5,7 +5,6 @@ import os
 import socket
 import struct
 import pickle
-from icecream import ic
 import numpy as np
 import torch
 import time
@@ -118,9 +117,7 @@ class Detection:
                 img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
                 """ running object detection on frame and annotate it """
-                ic()
                 results = self.predict(img)
-                ic()
                 img, class_ids = self.plot_annotate(results, img)
                 logging.info("Annotated frame")
 
@@ -132,7 +129,6 @@ class Detection:
                 frame_path = os.path.join(frames_dir, frame_filename)
                 logging.info("frame is named and created")
                 cv2.imwrite(frame_path, img)
-                logging.info("saving frame")
                 logging.info(f"Frame saved at {frame_path}")
 
                 """ send acknowledgement to the client """

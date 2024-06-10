@@ -5,7 +5,6 @@ import os
 import socket
 import struct
 import pickle
-from icecream import ic
 import numpy as np
 import torch
 import time
@@ -107,7 +106,7 @@ class Detection:
                 while len(data) < msg_size:
                     data_chunk = conn.recv(4096)
                     if not data_chunk:
-                        logging.error("Incomplete data received")
+                        logging.error("Incomplete data received (Server 1)")
                         return
                     data += data_chunk
 
@@ -115,14 +114,11 @@ class Detection:
                 """ loading frames from client """
                 frame = pickle.loads(frame_data)
                 frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-                logging.debug("Frame received and decoded")
+                logging.debug("Frame received and decoded (Server 1)")
 
                 img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
                 """ running object detection on frame and annotate it """
-                ic()
                 results = self.predict(img)
-                ic()
                 img, class_ids = self.plot_annotate(results, img)
                 logging.info("Annotated frame")
 
@@ -137,10 +133,10 @@ class Detection:
                 logging.info(f"Frame saved at {frame_path}")
 
                 """ send acknowledgement to the client """
-                logging.debug("Sending ACK")
+                logging.debug("Sending ACK (Server 1)")
                 conn.sendall(b'ACK')
         except Exception as e:
-            logging.error(f"Error processing frame: {e}")
+            logging.error(f"Error processing frame: {e} (Server 1)")
         finally:
             conn.close()
             logging.info("Connection closed")
@@ -153,7 +149,7 @@ class Detection:
         returns:
             returns the processed image to the client
         """
-        logging.info("Starting server")
+        logging.info("Starting server (Server 1)")
         """ if the connection is still active"""
         while True:
             try:
@@ -177,7 +173,7 @@ class Detection:
 
             except OSError as e:
                 if e.errno == 98:
-                    logging.error("Address already in use, retrying...")
+                    logging.error("Address already in use, retrying... (Server 1)")
                     if server_socket:
                         server_socket.close()
                     time.sleep(1)
