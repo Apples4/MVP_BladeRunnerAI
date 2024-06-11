@@ -16,10 +16,11 @@ def save_info(input_video_path: str):
     params:
         input_video_path: path to the video
     return:
-        cvs file
+        cvs file names "output.csv"
     """
     frames_generator = sv.get_video_frames_generator(input_video_path)
     with sv.CSVSink() as sink:
+        """ loop through the frames """
         for frame_index, frame in enumerate(frames_generator):
             results = model(frame)[0]
             detections = sv.Detections.from_ultralytics(results)
@@ -27,6 +28,6 @@ def save_info(input_video_path: str):
             break
 
     df = pd.read_csv("output.csv")
-    # Display the DataFrame with the specified columns
+    """ Display the DataFrame with the specified columns """
     (df[["time", "class_name", "confidence"]])
     df.to_csv("output.csv", index=False)

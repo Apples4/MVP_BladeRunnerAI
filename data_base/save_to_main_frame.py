@@ -56,5 +56,3 @@ def update_main(new_detection_path: str, maindata_path: str):
     df_main.reset_index(drop=True, inplace=True)
     "saving tthe csv file and deleting the new data"
     df_main.to_csv(maindata_path, index=False)
-
-    os.remove(new_detection_path)
