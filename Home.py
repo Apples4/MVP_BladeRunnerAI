@@ -1,4 +1,5 @@
 import streamlit as st
+import hmac
 from save_to_csv import save_info
 from data_base.save_to_main_frame import update_main
 import pandas as pd
@@ -59,7 +60,55 @@ st.set_page_config(
     page_icon="OIG4.jpg",
 )
 
+st.markdown(
+    """
+    <style>
+    .css-18e3th9 {
+        padding-top: 0rem;
+        padding-bottom: 10px;
+    }
+    .css-1d391kg {
+        padding-top: 0rem;
+    }
+    .css-1v0mbdj {
+        padding-top: 0rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+def check_password():
+    """Returns `True` if the user had the correct password."""
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store the password.
+        else:
+            st.session_state["password_correct"] = False
+
+    # Return True if the password is validated.
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Show input for password.
+    st.text_input(
+        "Password", type="password", on_change=password_entered, key="password"
+    )
+    if "password_correct" in st.session_state:
+        st.error("😕 Password incorrect")
+    return False
+
+
+if not check_password():
+    st.stop()
+
+# Set up Home page
+st.markdown("---")
 st.title("BladeRunnerAI :skull_and_crossbones:")
+st.markdown("---")
 st.markdown("Home Page")
 
 # Starting server and client
@@ -86,7 +135,7 @@ with tab1:
     tab1.title = "Camera 1"
 
     # Create a placeholder in the Streamlit app
-
+    @st.cache_data
     def display_frames_camera1():
         # function to show frames in tab0
 
@@ -129,7 +178,7 @@ with tab1:
 with tab2:
     tab2.title = "Camera 2"
     # Create a placeholder in tab2
-
+    @st.cache_data
     def display_frames_camera2():
         # function to display frames in tab"
         def get_frame_files():
